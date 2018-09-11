@@ -6,7 +6,7 @@
 
 2. Install React packages with:
 
-npm install
+    npm install
 
     You may also have to install Node or NPM.
 

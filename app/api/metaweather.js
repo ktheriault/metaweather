@@ -1,17 +1,15 @@
 const axios = require("axios");
 
-const baseURL = "https://www.metaweather.com/api"
+const baseURL = `${location.origin}/api/v1`
 
 function getWeatherByQuery(query) {
-    //const url = `${baseURL}/location/search/?query=${query}`
-    const url = `${baseURL}/location/44418/2013/4/27`
-    return axios.get(url)
+    const url = `${baseURL}/metaweather/query`;
+    const body = { query };
+    return axios.post(url, body)
         .then((response) => {
-            console.log(response)
             return response.data;
         })
         .catch((err) => {
-            console.log(err);
             return err;
         })
 }
@@ -20,15 +18,12 @@ function getWeatherByCoordinates(latitude, longitude) {
     const url = `${baseURL}/location/search/?lattlong=${latitude},${longitude}`
     return axios.get(url)
         .then((response) => {
-            console.log(response)
             return response.data;
         })
         .catch((err) => {
-            console.log(err);
             return err;
         })
 }
-
 
 module.exports = {
     getWeatherByQuery, getWeatherByCoordinates

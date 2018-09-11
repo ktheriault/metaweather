@@ -110,12 +110,13 @@
 
 var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 
-var baseURL = "https://www.metaweather.com/api";
+var baseURL = location.origin + "/api/v1";
 
 function getWeatherByQuery(query) {
-    //const url = `${baseURL}/location/search/?query=${query}`
-    var url = baseURL + "/location/44418/2013/4/27";
-    return axios.get(url).then(function (response) {
+    var url = baseURL + "/metaweather/query";
+    var body = { query: query };
+    console.log(url, body);
+    return axios.post(url, body).then(function (response) {
         console.log(response);
         return response.data;
     }).catch(function (err) {

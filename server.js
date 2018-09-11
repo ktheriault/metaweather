@@ -1,19 +1,19 @@
 const express = require("express");
-const cors = require('cors');
+const bodyParser = require("body-parser");
 
 const app = express();
-app.use(cors());
 
-console.log("Using CORS");
+// Be able to receive body in POST requests.
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-// app.use(express.static(path.join(__dirname, "..", "build")));
-// app.use(express.static(path.join(__dirname, "..", "static")));
-// app.get("/*", function (req, res) {
-//     res.sendFile(path.join(__dirname, "..", "build", "index.html"));
-// });
+// Hook up to router.
+const apiRouter = express.Router();
+require("./app/routes/index")(apiRouter);
+app.use("/api/v1", apiRouter);
 
+// Use frontend.
 app.use(express.static(__dirname + '/build/'));
-app.use('/src/assets', express.static(__dirname + '/src/assets/'));
 
-
+// Run app.
 app.listen(process.env.PORT || 8080);

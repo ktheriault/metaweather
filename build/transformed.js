@@ -110,7 +110,7 @@
 
 var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 
-var baseURL = "https://metaweather.com/api";
+var baseURL = "https://www.metaweather.com/api";
 
 function getWeatherByQuery(query) {
     //const url = `${baseURL}/location/search/?query=${query}`

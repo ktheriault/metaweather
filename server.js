@@ -1,6 +1,10 @@
 const express = require("express");
+const cors = require('cors');
 
 const app = express();
+app.use(cors());
+
+console.log("Using CORS");
 
 // app.use(express.static(path.join(__dirname, "..", "build")));
 // app.use(express.static(path.join(__dirname, "..", "static")));

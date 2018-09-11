@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const baseURL = "https://metaweather.com/api"
+const baseURL = "https://www.metaweather.com/api"
 
 function getWeatherByQuery(query) {
     //const url = `${baseURL}/location/search/?query=${query}`

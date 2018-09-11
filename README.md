@@ -2,21 +2,21 @@
 
 1. Clone the repo with:
 
-    git clone https://github.com/ktheriault/metaweather
+    `git clone https://github.com/ktheriault/metaweather`
 
 2. Install React packages with:
 
-    npm install
+    `npm install`
 
     You may also have to install Node or NPM.
 
 3. Build the frontend with:
 
-    npm run build
+    `npm run build`
 
 4. Run the backend with:
 
-    node server.js
+    `node server.js`
 
     This keeps running in the Terminal.
 

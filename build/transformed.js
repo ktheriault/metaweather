@@ -96,6 +96,34 @@
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+var SET_IS_LOADING = exports.SET_IS_LOADING = "SET_IS_LOADING";
+var SET_CURRENT_LOCATIONS = exports.SET_CURRENT_LOCATIONS = "SET_CURRENT_LOCATIONS";
+var SAVE_RESULT = exports.SAVE_RESULT = "SAVE_RESULT";
+
+var setIsLoading = exports.setIsLoading = function setIsLoading(isLoading) {
+    return {
+        type: SET_IS_LOADING,
+        isLoading: isLoading
+    };
+};
+
+var setCurrentLocations = exports.setCurrentLocations = function setCurrentLocations(currentLocations) {
+    return {
+        type: SET_CURRENT_LOCATIONS,
+        currentLocations: currentLocations
+    };
+};
+
+var saveResult = exports.saveResult = function saveResult(result) {
+    return {
+        type: SAVE_RESULT,
+        result: result
+    };
+};
+
 /***/ }),
 
 /***/ "./app/api/metaweather.js":
@@ -112,32 +140,52 @@ var axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 
 var baseURL = location.origin + "/api/v1";
 
-function getWeatherByQuery(query) {
+function getLocationsByQuery(query) {
     var url = baseURL + "/metaweather/query";
     var body = { query: query };
-    console.log(url, body);
     return axios.post(url, body).then(function (response) {
-        console.log(response);
         return response.data;
     }).catch(function (err) {
-        console.log(err);
         return err;
     });
 }
 
-function getWeatherByCoordinates(latitude, longitude) {
-    var url = baseURL + "/location/search/?lattlong=" + latitude + "," + longitude;
-    return axios.get(url).then(function (response) {
-        console.log(response);
+function getLocationsByCoordinates(latitude, longitude) {
+    var url = baseURL + "/metaweather/coordinates";
+    var body = { latitude: latitude, longitude: longitude };
+    return axios.post(url, body).then(function (response) {
         return response.data;
     }).catch(function (err) {
-        console.log(err);
+        return err;
+    });
+}
+
+function getLocationsByIP() {
+    var url = "http://ip-api.com/json";
+    return axios.get(url).then(function (response) {
+        return response.data;
+    }).then(function (data) {
+        var lat = data.lat,
+            lon = data.lon;
+
+        return getLocationsByCoordinates(lat, lon);
+    }).catch(function (err) {
+        return err;
+    });
+}
+
+function getWeather(woeid) {
+    var url = baseURL + "/metaweather/woeid";
+    var body = { woeid: woeid };
+    return axios.post(url, body).then(function (response) {
+        return response.data;
+    }).catch(function (err) {
         return err;
     });
 }
 
 module.exports = {
-    getWeatherByQuery: getWeatherByQuery, getWeatherByCoordinates: getWeatherByCoordinates
+    getLocationsByQuery: getLocationsByQuery, getLocationsByIP: getLocationsByIP, getWeather: getWeather
 };
 
 /***/ }),
@@ -162,7 +210,25 @@ var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _metaweather = __webpack_require__(/*! ../api/metaweather */ "./app/api/metaweather.js");
+var _QuerySearch = __webpack_require__(/*! ../containers/QuerySearch */ "./app/containers/QuerySearch.js");
+
+var _QuerySearch2 = _interopRequireDefault(_QuerySearch);
+
+var _IPSearch = __webpack_require__(/*! ../containers/IPSearch */ "./app/containers/IPSearch.js");
+
+var _IPSearch2 = _interopRequireDefault(_IPSearch);
+
+var _LocationSelection = __webpack_require__(/*! ../containers/LocationSelection */ "./app/containers/LocationSelection.js");
+
+var _LocationSelection2 = _interopRequireDefault(_LocationSelection);
+
+var _WeatherDisplay = __webpack_require__(/*! ../containers/WeatherDisplay */ "./app/containers/WeatherDisplay.js");
+
+var _WeatherDisplay2 = _interopRequireDefault(_WeatherDisplay);
+
+var _SavedResults = __webpack_require__(/*! ../containers/SavedResults */ "./app/containers/SavedResults.js");
+
+var _SavedResults2 = _interopRequireDefault(_SavedResults);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -180,12 +246,273 @@ var App = function (_Component) {
 
         var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 
-        _this.onGetWeather = async function () {
+        _this.state = {
+            isLoading: false
+        };
+        return _this;
+    }
+
+    _createClass(App, [{
+        key: "render",
+        value: function render() {
+            return _react2.default.createElement(
+                "div",
+                null,
+                _react2.default.createElement(_QuerySearch2.default, null),
+                _react2.default.createElement(_IPSearch2.default, null),
+                _react2.default.createElement(_LocationSelection2.default, null),
+                _react2.default.createElement(_WeatherDisplay2.default, null)
+            );
+        }
+    }]);
+
+    return App;
+}(_react.Component);
+
+;
+
+exports.default = App;
+
+/***/ }),
+
+/***/ "./app/components/IPSearch.js":
+/*!************************************!*\
+  !*** ./app/components/IPSearch.js ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _metaweather = __webpack_require__(/*! ../api/metaweather */ "./app/api/metaweather.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var IPSearch = function (_Component) {
+    _inherits(IPSearch, _Component);
+
+    function IPSearch(props) {
+        _classCallCheck(this, IPSearch);
+
+        var _this = _possibleConstructorReturn(this, (IPSearch.__proto__ || Object.getPrototypeOf(IPSearch)).call(this, props));
+
+        _this.onSearch = async function () {
+            _this.props.setIsLoading(true);
+            var locations = await (0, _metaweather.getLocationsByIP)();
+            _this.props.setCurrentLocations(locations);
+            _this.props.setIsLoading(false);
+        };
+
+        return _this;
+    }
+
+    _createClass(IPSearch, [{
+        key: "render",
+        value: function render() {
+            return _react2.default.createElement(
+                "div",
+                null,
+                _react2.default.createElement(
+                    "button",
+                    {
+                        onClick: this.onSearch,
+                        disabled: this.props.isLoading
+                    },
+                    "Search by IP"
+                )
+            );
+        }
+    }]);
+
+    return IPSearch;
+}(_react.Component);
+
+;
+
+IPSearch.props = {
+    isLoading: _propTypes2.default.bool,
+    setIsLoading: _propTypes2.default.func,
+    setCurrentLocations: _propTypes2.default.func
+};
+
+exports.default = IPSearch;
+
+/***/ }),
+
+/***/ "./app/components/LocationSelection.js":
+/*!*********************************************!*\
+  !*** ./app/components/LocationSelection.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _metaweather = __webpack_require__(/*! ../api/metaweather */ "./app/api/metaweather.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var LocationSelection = function (_Component) {
+    _inherits(LocationSelection, _Component);
+
+    function LocationSelection(props) {
+        _classCallCheck(this, LocationSelection);
+
+        var _this = _possibleConstructorReturn(this, (LocationSelection.__proto__ || Object.getPrototypeOf(LocationSelection)).call(this, props));
+
+        _this.getOnLocationSelectedHandler = function (i) {
+            return async function () {
+                _this.props.setIsLoading(true);
+                var res = await (0, _metaweather.getWeather)(_this.props.currentLocations[i].woeid);
+                _this.props.saveResult(res);
+                _this.props.setIsLoading(false);
+            };
+        };
+
+        return _this;
+    }
+
+    _createClass(LocationSelection, [{
+        key: "render",
+        value: function render() {
+            var _this2 = this;
+
+            var _props = this.props,
+                isLoading = _props.isLoading,
+                currentLocations = _props.currentLocations;
+
+            return isLoading ? _react2.default.createElement(
+                "div",
+                null,
+                "Loading..."
+            ) : currentLocations.length === 0 ? _react2.default.createElement(
+                "div",
+                null,
+                "Enter a query to get started"
+            ) : _react2.default.createElement(
+                "div",
+                null,
+                currentLocations.map(function (location, i) {
+                    return _react2.default.createElement(
+                        "div",
+                        {
+                            key: location.woeid,
+                            onClick: _this2.getOnLocationSelectedHandler(i)
+                        },
+                        location.title
+                    );
+                })
+            );
+        }
+    }]);
+
+    return LocationSelection;
+}(_react.Component);
+
+;
+
+LocationSelection.props = {
+    isLoading: _propTypes2.default.bool,
+    currentLocations: _propTypes2.default.array,
+    setIsLoading: _propTypes2.default.func
+};
+
+exports.default = LocationSelection;
+
+/***/ }),
+
+/***/ "./app/components/QuerySearch.js":
+/*!***************************************!*\
+  !*** ./app/components/QuerySearch.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _metaweather = __webpack_require__(/*! ../api/metaweather */ "./app/api/metaweather.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var QuerySearch = function (_Component) {
+    _inherits(QuerySearch, _Component);
+
+    function QuerySearch(props) {
+        _classCallCheck(this, QuerySearch);
+
+        var _this = _possibleConstructorReturn(this, (QuerySearch.__proto__ || Object.getPrototypeOf(QuerySearch)).call(this, props));
+
+        _this.onSearch = async function () {
             var query = _this.state.query;
 
             if (query) {
-                var res = await (0, _metaweather.getWeatherByQuery)(query);
-                console.log(res);
+                _this.props.setIsLoading(true);
+                var locations = await (0, _metaweather.getLocationsByQuery)(query);
+                _this.props.setCurrentLocations(locations);
+                _this.props.setIsLoading(false);
             }
         };
 
@@ -195,7 +522,7 @@ var App = function (_Component) {
         return _this;
     }
 
-    _createClass(App, [{
+    _createClass(QuerySearch, [{
         key: "render",
         value: function render() {
             var _this2 = this;
@@ -207,12 +534,14 @@ var App = function (_Component) {
                     value: this.state.query,
                     onChange: function onChange(event) {
                         _this2.setState({ query: event.target.value });
-                    }
+                    },
+                    disabled: this.props.isLoading
                 }),
                 _react2.default.createElement(
                     "button",
                     {
-                        onClick: this.onGetWeather
+                        onClick: this.onSearch,
+                        disabled: this.props.isLoading
                     },
                     "Get Weather"
                 )
@@ -220,12 +549,411 @@ var App = function (_Component) {
         }
     }]);
 
-    return App;
+    return QuerySearch;
 }(_react.Component);
 
 ;
 
-exports.default = App;
+QuerySearch.props = {
+    isLoading: _propTypes2.default.bool,
+    setIsLoading: _propTypes2.default.func,
+    setCurrentLocations: _propTypes2.default.func
+};
+
+exports.default = QuerySearch;
+
+/***/ }),
+
+/***/ "./app/components/SavedResults.js":
+/*!****************************************!*\
+  !*** ./app/components/SavedResults.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var SavedResults = function (_Component) {
+    _inherits(SavedResults, _Component);
+
+    function SavedResults(props) {
+        _classCallCheck(this, SavedResults);
+
+        return _possibleConstructorReturn(this, (SavedResults.__proto__ || Object.getPrototypeOf(SavedResults)).call(this, props));
+    }
+
+    _createClass(SavedResults, [{
+        key: "render",
+        value: function render() {
+            return this.props.isLoading ? _react2.default.createElement(
+                "div",
+                null,
+                "Loading..."
+            ) : _react2.default.createElement(
+                "div",
+                null,
+                "Results"
+            );
+        }
+    }]);
+
+    return SavedResults;
+}(_react.Component);
+
+;
+
+SavedResults.props = {
+    isLoading: _propTypes2.default.bool,
+    lastFiveResults: _propTypes2.default.array
+};
+
+exports.default = SavedResults;
+
+/***/ }),
+
+/***/ "./app/components/WeatherDisplay.js":
+/*!******************************************!*\
+  !*** ./app/components/WeatherDisplay.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var WeatherDisplay = function (_Component) {
+    _inherits(WeatherDisplay, _Component);
+
+    function WeatherDisplay(props) {
+        _classCallCheck(this, WeatherDisplay);
+
+        return _possibleConstructorReturn(this, (WeatherDisplay.__proto__ || Object.getPrototypeOf(WeatherDisplay)).call(this, props));
+    }
+
+    _createClass(WeatherDisplay, [{
+        key: "render",
+        value: function render() {
+            var _props = this.props,
+                isLoading = _props.isLoading,
+                currentResult = _props.currentResult;
+
+            return isLoading ? _react2.default.createElement(
+                "div",
+                null,
+                "Loading..."
+            ) : !currentResult ? _react2.default.createElement(
+                "div",
+                null,
+                "No result"
+            ) : _react2.default.createElement(
+                "div",
+                null,
+                currentResult.consolidated_weather.map(function (weather) {
+                    return _react2.default.createElement(
+                        "div",
+                        {
+                            key: weather.applicable_date
+                        },
+                        _react2.default.createElement(
+                            "div",
+                            null,
+                            "Date: ",
+                            weather.applicable_date
+                        ),
+                        _react2.default.createElement(
+                            "div",
+                            null,
+                            "Weather: ",
+                            weather.weather_state_name
+                        ),
+                        _react2.default.createElement(
+                            "div",
+                            null,
+                            "Low: ",
+                            weather.min_temp
+                        ),
+                        _react2.default.createElement(
+                            "div",
+                            null,
+                            "High: ",
+                            weather.max_temp
+                        )
+                    );
+                })
+            );
+        }
+    }]);
+
+    return WeatherDisplay;
+}(_react.Component);
+
+;
+
+WeatherDisplay.props = {
+    isLoading: _propTypes2.default.bool,
+    currentResult: _propTypes2.default.array
+};
+
+exports.default = WeatherDisplay;
+
+/***/ }),
+
+/***/ "./app/containers/IPSearch.js":
+/*!************************************!*\
+  !*** ./app/containers/IPSearch.js ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _reactRedux = __webpack_require__(/*! react-redux */ "./node_modules/react-redux/es/index.js");
+
+var _actions = __webpack_require__(/*! ../actions/actions */ "./app/actions/actions.js");
+
+var actions = _interopRequireWildcard(_actions);
+
+var _IPSearch = __webpack_require__(/*! ../components/IPSearch */ "./app/components/IPSearch.js");
+
+var _IPSearch2 = _interopRequireDefault(_IPSearch);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+var mapStateToProps = function mapStateToProps(state) {
+    return {
+        isLoading: state.isLoading
+    };
+};
+
+var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+    return {
+        setIsLoading: function setIsLoading(isLoading) {
+            dispatch(actions.setIsLoading(isLoading));
+        },
+        setCurrentLocations: function setCurrentLocations(results) {
+            dispatch(actions.setCurrentLocations(results));
+        }
+    };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(_IPSearch2.default);
+
+/***/ }),
+
+/***/ "./app/containers/LocationSelection.js":
+/*!*********************************************!*\
+  !*** ./app/containers/LocationSelection.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _reactRedux = __webpack_require__(/*! react-redux */ "./node_modules/react-redux/es/index.js");
+
+var _actions = __webpack_require__(/*! ../actions/actions */ "./app/actions/actions.js");
+
+var actions = _interopRequireWildcard(_actions);
+
+var _LocationSelection = __webpack_require__(/*! ../components/LocationSelection */ "./app/components/LocationSelection.js");
+
+var _LocationSelection2 = _interopRequireDefault(_LocationSelection);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+var mapStateToProps = function mapStateToProps(state) {
+    return {
+        isLoading: state.isLoading,
+        currentLocations: state.currentLocations
+    };
+};
+
+var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+    return {
+        setIsLoading: function setIsLoading(isLoading) {
+            dispatch(actions.setIsLoading(isLoading));
+        },
+        saveResult: function saveResult(result) {
+            dispatch(actions.saveResult(result));
+        }
+    };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(_LocationSelection2.default);
+
+/***/ }),
+
+/***/ "./app/containers/QuerySearch.js":
+/*!***************************************!*\
+  !*** ./app/containers/QuerySearch.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _reactRedux = __webpack_require__(/*! react-redux */ "./node_modules/react-redux/es/index.js");
+
+var _actions = __webpack_require__(/*! ../actions/actions */ "./app/actions/actions.js");
+
+var actions = _interopRequireWildcard(_actions);
+
+var _QuerySearch = __webpack_require__(/*! ../components/QuerySearch */ "./app/components/QuerySearch.js");
+
+var _QuerySearch2 = _interopRequireDefault(_QuerySearch);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+var mapStateToProps = function mapStateToProps(state) {
+    return {
+        isLoading: state.isLoading
+    };
+};
+
+var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+    return {
+        setIsLoading: function setIsLoading(isLoading) {
+            dispatch(actions.setIsLoading(isLoading));
+        },
+        setCurrentLocations: function setCurrentLocations(results) {
+            dispatch(actions.setCurrentLocations(results));
+        }
+    };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(_QuerySearch2.default);
+
+/***/ }),
+
+/***/ "./app/containers/SavedResults.js":
+/*!****************************************!*\
+  !*** ./app/containers/SavedResults.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _reactRedux = __webpack_require__(/*! react-redux */ "./node_modules/react-redux/es/index.js");
+
+var _SavedResults = __webpack_require__(/*! ../components/SavedResults */ "./app/components/SavedResults.js");
+
+var _SavedResults2 = _interopRequireDefault(_SavedResults);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var mapStateToProps = function mapStateToProps(state) {
+    return {
+        isLoading: state.isLoading,
+        lastFiveResults: state.lastFiveResults
+    };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps)(_SavedResults2.default);
+
+/***/ }),
+
+/***/ "./app/containers/WeatherDisplay.js":
+/*!******************************************!*\
+  !*** ./app/containers/WeatherDisplay.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _reactRedux = __webpack_require__(/*! react-redux */ "./node_modules/react-redux/es/index.js");
+
+var _WeatherDisplay = __webpack_require__(/*! ../components/WeatherDisplay */ "./app/components/WeatherDisplay.js");
+
+var _WeatherDisplay2 = _interopRequireDefault(_WeatherDisplay);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var mapStateToProps = function mapStateToProps(state) {
+    return {
+        isLoading: state.isLoading,
+        currentResult: state.currentResult
+    };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps)(_WeatherDisplay2.default);
 
 /***/ }),
 
@@ -281,19 +1009,62 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _actions = __webpack_require__(/*! ../actions/actions */ "./app/actions/actions.js");
 
 var actions = _interopRequireWildcard(_actions);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-var defaultState = {};
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var defaultState = {
+    isLoading: false,
+    currentLocations: [],
+    currentResult: null,
+    lastFiveResults: []
+};
 
 var reducer = function reducer() {
     var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultState;
     var action = arguments[1];
 
     switch (action.type) {
+        case actions.SET_IS_LOADING:
+            {
+                var isLoading = action.isLoading;
+
+                return _extends({}, state, {
+                    isLoading: isLoading
+                });
+            }
+        case actions.SET_CURRENT_LOCATIONS:
+            {
+                var currentLocations = action.currentLocations;
+
+                return _extends({}, state, {
+                    currentLocations: currentLocations
+                });
+            }
+        case actions.SAVE_RESULT:
+            {
+                var result = action.result;
+
+                if (state.lastFiveResults.length < 5) {
+                    var lastFiveResults = [].concat(_toConsumableArray(state.lastFiveResults), [result]);
+                    return _extends({}, state, {
+                        lastFiveResults: lastFiveResults,
+                        currentResult: result
+                    });
+                } else {
+                    var _lastFiveResults = [].concat(_toConsumableArray(state.lastFiveResults.slice(1, 5)), [result]);
+                    return _extends({}, state, {
+                        lastFiveResults: _lastFiveResults,
+                        currentResult: result
+                    });
+                }
+            }
         default:
             return state;
     }

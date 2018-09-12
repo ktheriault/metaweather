@@ -1,6 +1,6 @@
-import React, {Component, PropTypes} from 'react';
-import { connect } from 'react-redux';
-import App from '../components/App';
+import { connect } from "react-redux";
+import * as actions from "../actions/actions";
+import App from "../components/App";
 
 const mapStateToProps = () => {
   return {}

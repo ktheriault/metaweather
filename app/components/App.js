@@ -1,35 +1,26 @@
-import React, { Component, PropTypes } from "react";
-import { getWeatherByQuery } from "../api/metaweather";
+import React, { Component } from "react";
+import QuerySearch from "../containers/QuerySearch";
+import IPSearch from "../containers/IPSearch";
+import LocationSelection from "../containers/LocationSelection";
+import WeatherDisplay from "../containers/WeatherDisplay";
+import SavedResults from "../containers/SavedResults";
 
 class App extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            query: "",
+            isLoading: false,
         };
-    }
-
-    onGetWeather = async () => {
-        const { query } = this.state;
-        if (query) {
-            const res = await getWeatherByQuery(query);
-            console.log(res);
-        }
     }
 
     render() {
         return (
             <div>
-                <input
-                    value={this.state.query}
-                    onChange={(event) => { this.setState({ query: event.target.value })}}
-                />
-                <button
-                    onClick={this.onGetWeather}
-                >
-                    Get Weather
-                </button>
+                <QuerySearch/>
+                <IPSearch/>
+                <LocationSelection/>
+                <WeatherDisplay/>
             </div>
         );
     }

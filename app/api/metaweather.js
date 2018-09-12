@@ -2,7 +2,7 @@ const axios = require("axios");
 
 const baseURL = `${location.origin}/api/v1`
 
-function getWeatherByQuery(query) {
+function getLocationsByQuery(query) {
     const url = `${baseURL}/metaweather/query`;
     const body = { query };
     return axios.post(url, body)
@@ -14,9 +14,37 @@ function getWeatherByQuery(query) {
         })
 }
 
-function getWeatherByCoordinates(latitude, longitude) {
-    const url = `${baseURL}/location/search/?lattlong=${latitude},${longitude}`
+function getLocationsByCoordinates(latitude, longitude) {
+    const url = `${baseURL}/metaweather/coordinates`;
+    const body = { latitude, longitude };
+    return axios.post(url, body)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((err) => {
+            return err;
+        })
+}
+
+function getLocationsByIP() {
+    const url = "http://ip-api.com/json";
     return axios.get(url)
+        .then((response) => {
+            return response.data;
+        })
+        .then((data) => {
+            const { lat, lon } = data;
+            return getLocationsByCoordinates(lat, lon)
+        })
+        .catch((err) => {
+            return err;
+        })
+}
+
+function getWeather(woeid) {
+    const url = `${baseURL}/metaweather/woeid`;
+    const body = { woeid };
+    return axios.post(url, body)
         .then((response) => {
             return response.data;
         })
@@ -26,5 +54,5 @@ function getWeatherByCoordinates(latitude, longitude) {
 }
 
 module.exports = {
-    getWeatherByQuery, getWeatherByCoordinates
+    getLocationsByQuery, getLocationsByIP, getWeather
 }

@@ -1,7 +1,7 @@
 {
-	"name": "ReactStarterKit",
+	"name": "Metaweather",
 	"version": "1.0.0",
-	"description": "Starter kit for React",
+	"description": "Metaweather API demo",
 	"main": "index.js",
 	"scripts": {
 		"build": "webpack",

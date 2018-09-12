@@ -21,7 +21,7 @@ class App extends Component {
     }
 
     render() {
-        const { currentLocations, currentResult } = this.props;
+        const { currentResult } = this.props;
         return (
             <div className={classNames("app-container")}>
                 <Grid>
@@ -47,7 +47,6 @@ class App extends Component {
 };
 
 App.propTypes = {
-    currentLocations: PropTypes.array,
     currentResult: PropTypes.object,
 }
 

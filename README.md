@@ -71,7 +71,7 @@ I am running through an Express server because the Metaweather API doesn't allow
     `app/reducers/`
 
     `app/actions/`
-    
+
     `app/containers/`
     
     Redux is storage that can be used across the app. I'm using it to store data like `currentLocations` and `currentResult` so that the data can be loaded once and then shared between different components.

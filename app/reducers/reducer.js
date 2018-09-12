@@ -2,7 +2,7 @@ import * as actions from '../actions/actions';
 
 const defaultState = {
     isLoading: false,
-    currentLocations: [],
+    currentLocations: null,
     currentResult: null,
     lastFiveResults: [],
 };

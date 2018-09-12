@@ -168,6 +168,8 @@ function getLocationsByCoordinates(latitude, longitude) {
     });
 }
 
+// Doesn't run on the live Heroku site because of "mixed content".
+// So I'm using the react-geolocated wrapper on the IPSearch component instead.
 function getLocationsByIP() {
     var url = "http://ip-api.com/json";
     return axios.get(url).then(function (response) {
@@ -193,7 +195,7 @@ function getWeather(woeid) {
 }
 
 module.exports = {
-    getLocationsByQuery: getLocationsByQuery, getLocationsByIP: getLocationsByIP, getWeather: getWeather
+    getLocationsByQuery: getLocationsByQuery, getLocationsByCoordinates: getLocationsByCoordinates, getWeather: getWeather
 };
 
 /***/ }),
@@ -206,7 +208,7 @@ module.exports = {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(process) {
+
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -225,6 +227,8 @@ var _propTypes2 = _interopRequireDefault(_propTypes);
 var _classnames = __webpack_require__(/*! classnames */ "./node_modules/classnames/index.js");
 
 var _classnames2 = _interopRequireDefault(_classnames);
+
+var _reactBootstrap = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 
 var _QuerySearch = __webpack_require__(/*! ../containers/QuerySearch */ "./app/containers/QuerySearch.js");
 
@@ -281,13 +285,35 @@ var App = function (_Component) {
                 "div",
                 { className: (0, _classnames2.default)("app-container") },
                 _react2.default.createElement(
-                    "div",
-                    { className: (0, _classnames2.default)("search-container") },
-                    _react2.default.createElement(_QuerySearch2.default, null),
-                    process.env.PORT ? null : _react2.default.createElement(_IPSearch2.default, null)
+                    _reactBootstrap.Grid,
+                    null,
+                    _react2.default.createElement(
+                        _reactBootstrap.Row,
+                        null,
+                        _react2.default.createElement(
+                            _reactBootstrap.Col,
+                            { sm: 12, md: 5, className: (0, _classnames2.default)("search-component") },
+                            _react2.default.createElement(_QuerySearch2.default, null)
+                        ),
+                        _react2.default.createElement(
+                            _reactBootstrap.Col,
+                            { sm: 12, md: 2, className: (0, _classnames2.default)("search-component") },
+                            _react2.default.createElement(
+                                "h5",
+                                null,
+                                "- or -"
+                            )
+                        ),
+                        _react2.default.createElement(
+                            _reactBootstrap.Col,
+                            { sm: 12, md: 5, className: (0, _classnames2.default)("search-component") },
+                            _react2.default.createElement(_IPSearch2.default, null)
+                        )
+                    )
                 ),
                 currentLocations && currentLocations.length > 0 ? _react2.default.createElement(_LocationSelection2.default, null) : null,
-                currentResult ? _react2.default.createElement(_WeatherDisplay2.default, null) : null
+                currentResult ? _react2.default.createElement(_WeatherDisplay2.default, null) : null,
+                _react2.default.createElement(_SavedResults2.default, null)
             );
         }
     }]);
@@ -303,7 +329,6 @@ App.propTypes = {
 };
 
 exports.default = App;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/process/browser.js */ "./node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -321,8 +346,6 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 
 var _react2 = _interopRequireDefault(_react);
@@ -331,9 +354,7 @@ var _propTypes = __webpack_require__(/*! prop-types */ "./node_modules/prop-type
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-var _classnames = __webpack_require__(/*! classnames */ "./node_modules/classnames/index.js");
-
-var _classnames2 = _interopRequireDefault(_classnames);
+var _reactGeolocated = __webpack_require__(/*! react-geolocated */ "./node_modules/react-geolocated/dist-modules/index.js");
 
 var _reactBootstrap = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 
@@ -341,54 +362,34 @@ var _metaweather = __webpack_require__(/*! ../api/metaweather */ "./app/api/meta
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var IPSearch = function IPSearch(props) {
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+    var onSearch = async function onSearch() {
+        var coords = props.coords;
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var IPSearch = function (_Component) {
-    _inherits(IPSearch, _Component);
-
-    function IPSearch(props) {
-        _classCallCheck(this, IPSearch);
-
-        var _this = _possibleConstructorReturn(this, (IPSearch.__proto__ || Object.getPrototypeOf(IPSearch)).call(this, props));
-
-        _this.onSearch = async function () {
-            _this.props.setIsLoading(true);
-            var locations = await (0, _metaweather.getLocationsByIP)();
-            _this.props.setCurrentResult(null);
-            _this.props.setCurrentLocations(locations);
-            _this.props.setIsLoading(false);
-        };
-
-        return _this;
-    }
-
-    _createClass(IPSearch, [{
-        key: "render",
-        value: function render() {
-            return _react2.default.createElement(
-                "div",
-                null,
-                _react2.default.createElement(
-                    _reactBootstrap.Button,
-                    {
-                        bsStyle: "primary",
-                        onClick: this.onSearch,
-                        disabled: this.props.isLoading
-                    },
-                    "Search by IP"
-                )
-            );
+        if (coords && coords.latitude && coords.longitude) {
+            props.setIsLoading(true);
+            var locations = await (0, _metaweather.getLocationsByCoordinates)(coords.latitude, coords.longitude);
+            props.setCurrentResult(null);
+            props.setCurrentLocations(locations);
+            props.setIsLoading(false);
         }
-    }]);
+    };
 
-    return IPSearch;
-}(_react.Component);
-
-;
+    return _react2.default.createElement(
+        "div",
+        null,
+        _react2.default.createElement(
+            _reactBootstrap.Button,
+            {
+                bsStyle: "primary",
+                onClick: onSearch,
+                disabled: props.isLoading || !props.isGeolocationAvailable || !props.coords
+            },
+            "Search by IP"
+        )
+    );
+};
 
 IPSearch.props = {
     isLoading: _propTypes2.default.bool,
@@ -397,7 +398,12 @@ IPSearch.props = {
     setCurrentResult: _propTypes2.default.func
 };
 
-exports.default = IPSearch;
+exports.default = (0, _reactGeolocated.geolocated)({
+    positionOptions: {
+        enableHighAccuracy: false
+    },
+    userDecisionTimeout: 5000
+})(IPSearch);
 
 /***/ }),
 
@@ -415,8 +421,6 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 
 var _react2 = _interopRequireDefault(_react);
@@ -435,88 +439,58 @@ var _metaweather = __webpack_require__(/*! ../api/metaweather */ "./app/api/meta
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var LocationSelection = function LocationSelection(props) {
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var LocationSelection = function (_Component) {
-    _inherits(LocationSelection, _Component);
-
-    function LocationSelection(props) {
-        _classCallCheck(this, LocationSelection);
-
-        var _this = _possibleConstructorReturn(this, (LocationSelection.__proto__ || Object.getPrototypeOf(LocationSelection)).call(this, props));
-
-        _this.getOnLocationSelectedHandler = function (i) {
-            return async function () {
-                _this.props.setIsLoading(true);
-                var res = await (0, _metaweather.getWeather)(_this.props.currentLocations[i].woeid);
-                _this.props.setCurrentLocations(null);
-                _this.props.saveResult(res);
-                _this.props.setIsLoading(false);
-            };
+    var getOnLocationSelectedHandler = function getOnLocationSelectedHandler(i) {
+        return async function () {
+            props.setIsLoading(true);
+            var res = await (0, _metaweather.getWeather)(props.currentLocations[i].woeid);
+            props.setCurrentLocations(null);
+            props.saveResult(res);
+            props.setIsLoading(false);
         };
+    };
 
-        return _this;
-    }
+    var isLoading = props.isLoading,
+        currentLocations = props.currentLocations;
 
-    _createClass(LocationSelection, [{
-        key: "render",
-        value: function render() {
-            var _this2 = this;
-
-            var _props = this.props,
-                isLoading = _props.isLoading,
-                currentLocations = _props.currentLocations;
-
-            return isLoading ? _react2.default.createElement(
-                "div",
-                null,
-                "Loading..."
-            ) : _react2.default.createElement(
-                _reactBootstrap.Well,
-                { className: (0, _classnames2.default)("locations-container") },
-                currentLocations && currentLocations.length === 0 ? _react2.default.createElement(
-                    "div",
-                    null,
-                    "Enter a query to get started"
-                ) : _react2.default.createElement(
-                    "div",
-                    null,
+    return isLoading ? _react2.default.createElement(
+        "div",
+        null,
+        "Loading..."
+    ) : _react2.default.createElement(
+        _reactBootstrap.Well,
+        { className: (0, _classnames2.default)("locations-container") },
+        currentLocations && currentLocations.length === 0 ? _react2.default.createElement(
+            "div",
+            null,
+            "Enter a query to get started"
+        ) : _react2.default.createElement(
+            "div",
+            null,
+            _react2.default.createElement(
+                "h4",
+                { className: (0, _classnames2.default)("title") },
+                "Select your location:"
+            ),
+            currentLocations.map(function (location, i) {
+                return _react2.default.createElement(
+                    _reactBootstrap.Panel,
+                    {
+                        key: location.woeid,
+                        className: (0, _classnames2.default)("location"),
+                        onClick: getOnLocationSelectedHandler(i)
+                    },
                     _react2.default.createElement(
-                        "div",
+                        _reactBootstrap.Panel.Body,
                         null,
-                        "Select your location:"
-                    ),
-                    currentLocations.map(function (location, i) {
-                        return _react2.default.createElement(
-                            "div",
-                            {
-                                key: location.woeid,
-                                onClick: _this2.getOnLocationSelectedHandler(i)
-                            },
-                            _react2.default.createElement(
-                                _reactBootstrap.Panel,
-                                null,
-                                _react2.default.createElement(
-                                    _reactBootstrap.Panel.Body,
-                                    null,
-                                    location.title
-                                )
-                            )
-                        );
-                    })
-                )
-            );
-        }
-    }]);
-
-    return LocationSelection;
-}(_react.Component);
-
-;
+                        location.title
+                    )
+                );
+            })
+        )
+    );
+};
 
 LocationSelection.props = {
     isLoading: _propTypes2.default.bool,
@@ -607,7 +581,7 @@ var QuerySearch = function (_Component) {
                     "form",
                     { className: (0, _classnames2.default)("form-inline") },
                     _react2.default.createElement(_reactBootstrap.FormControl, {
-                        className: (0, _classnames2.default)("form-control"),
+                        className: (0, _classnames2.default)("form-control", "search-bar"),
                         value: this.state.query,
                         onChange: function onChange(event) {
                             _this2.setState({ query: event.target.value });
@@ -659,8 +633,6 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 
 var _react2 = _interopRequireDefault(_react);
@@ -673,46 +645,70 @@ var _classnames = __webpack_require__(/*! classnames */ "./node_modules/classnam
 
 var _classnames2 = _interopRequireDefault(_classnames);
 
+var _reactBootstrap = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var SavedResults = function SavedResults(props) {
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+    var getOnResultSelectedHandler = function getOnResultSelectedHandler(i) {
+        return function () {
+            props.setCurrentLocations(null);
+            props.setCurrentResult(props.lastFiveResults[i]);
+        };
+    };
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+    var lastFiveResults = props.lastFiveResults;
 
-var SavedResults = function (_Component) {
-    _inherits(SavedResults, _Component);
-
-    function SavedResults(props) {
-        _classCallCheck(this, SavedResults);
-
-        return _possibleConstructorReturn(this, (SavedResults.__proto__ || Object.getPrototypeOf(SavedResults)).call(this, props));
-    }
-
-    _createClass(SavedResults, [{
-        key: "render",
-        value: function render() {
-            return this.props.isLoading ? _react2.default.createElement(
-                "div",
-                null,
-                "Loading..."
-            ) : _react2.default.createElement(
-                "div",
-                null,
-                "Results"
-            );
-        }
-    }]);
-
-    return SavedResults;
-}(_react.Component);
-
-;
+    return lastFiveResults && lastFiveResults.length > 0 ? _react2.default.createElement(
+        "div",
+        null,
+        _react2.default.createElement(
+            "h3",
+            { className: (0, _classnames2.default)("title") },
+            "Your saved results"
+        ),
+        _react2.default.createElement(
+            _reactBootstrap.Well,
+            { className: (0, _classnames2.default)("saved-results-container") },
+            lastFiveResults.map(function (result, i) {
+                var date = new Date(result.time);
+                var month = date.getMonth() + 1;
+                if (month < 10) month = "0" + month;
+                var day = date.getDate();
+                if (day < 10) day = "0" + day;
+                var time = date.getFullYear() + "-" + month + "-" + day;
+                return _react2.default.createElement(
+                    _reactBootstrap.Panel,
+                    {
+                        key: i,
+                        className: (0, _classnames2.default)("saved-result"),
+                        onClick: getOnResultSelectedHandler(i)
+                    },
+                    _react2.default.createElement(
+                        _reactBootstrap.Panel.Body,
+                        null,
+                        _react2.default.createElement(
+                            "div",
+                            { className: (0, _classnames2.default)("overflow-text") },
+                            result.title
+                        ),
+                        _react2.default.createElement(
+                            "div",
+                            { className: (0, _classnames2.default)("overflow-text") },
+                            time
+                        )
+                    )
+                );
+            })
+        )
+    ) : null;
+};
 
 SavedResults.props = {
-    isLoading: _propTypes2.default.bool,
-    lastFiveResults: _propTypes2.default.array
+    lastFiveResults: _propTypes2.default.array,
+    setCurrentLocations: _propTypes2.default.func,
+    setCurrentResult: _propTypes2.default.func
 };
 
 exports.default = SavedResults;
@@ -733,8 +729,6 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 
 var _react2 = _interopRequireDefault(_react);
@@ -751,103 +745,75 @@ var _reactBootstrap = __webpack_require__(/*! react-bootstrap */ "./node_modules
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var WeatherDisplay = function WeatherDisplay(props) {
+    var isLoading = props.isLoading,
+        currentResult = props.currentResult;
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var WeatherDisplay = function (_Component) {
-    _inherits(WeatherDisplay, _Component);
-
-    function WeatherDisplay(props) {
-        _classCallCheck(this, WeatherDisplay);
-
-        return _possibleConstructorReturn(this, (WeatherDisplay.__proto__ || Object.getPrototypeOf(WeatherDisplay)).call(this, props));
-    }
-
-    _createClass(WeatherDisplay, [{
-        key: "render",
-        value: function render() {
-            var _props = this.props,
-                isLoading = _props.isLoading,
-                currentResult = _props.currentResult;
-
-            return isLoading ? _react2.default.createElement(
-                "div",
-                null,
-                "Loading..."
-            ) : !currentResult ? _react2.default.createElement(
-                "div",
-                null,
-                "No result"
-            ) : _react2.default.createElement(
-                "div",
-                null,
-                _react2.default.createElement(
-                    "h3",
-                    null,
-                    "Showing weather for ",
-                    currentResult.title
-                ),
-                _react2.default.createElement(
-                    "div",
-                    null,
-                    _react2.default.createElement(
-                        _reactBootstrap.Well,
-                        { className: (0, _classnames2.default)("weather-container") },
-                        currentResult.consolidated_weather.map(function (weather) {
-                            return _react2.default.createElement(
-                                "div",
-                                {
-                                    key: weather.applicable_date
-                                },
+    return isLoading ? _react2.default.createElement(
+        "div",
+        null,
+        "Loading..."
+    ) : currentResult ? _react2.default.createElement(
+        "div",
+        { className: (0, _classnames2.default)("weather-display-container") },
+        _react2.default.createElement(
+            "h3",
+            { className: (0, _classnames2.default)("title") },
+            "Showing weather for ",
+            currentResult.title
+        ),
+        _react2.default.createElement(
+            "div",
+            null,
+            _react2.default.createElement(
+                _reactBootstrap.Well,
+                { className: (0, _classnames2.default)("weather-container") },
+                currentResult.consolidated_weather.map(function (weather) {
+                    return _react2.default.createElement(
+                        "div",
+                        {
+                            key: weather.applicable_date
+                        },
+                        _react2.default.createElement(
+                            _reactBootstrap.Panel,
+                            null,
+                            _react2.default.createElement(
+                                _reactBootstrap.Panel.Body,
+                                null,
                                 _react2.default.createElement(
-                                    _reactBootstrap.Panel,
-                                    null,
-                                    _react2.default.createElement(
-                                        _reactBootstrap.Panel.Body,
-                                        null,
-                                        _react2.default.createElement(
-                                            "div",
-                                            null,
-                                            "Date: ",
-                                            weather.applicable_date
-                                        ),
-                                        _react2.default.createElement(
-                                            "div",
-                                            null,
-                                            "Weather: ",
-                                            weather.weather_state_name
-                                        ),
-                                        _react2.default.createElement(
-                                            "div",
-                                            null,
-                                            "Low: ",
-                                            weather.min_temp.toFixed(2),
-                                            " C"
-                                        ),
-                                        _react2.default.createElement(
-                                            "div",
-                                            null,
-                                            "High: ",
-                                            weather.max_temp.toFixed(2),
-                                            " C"
-                                        )
-                                    )
+                                    "div",
+                                    { className: (0, _classnames2.default)("overflow-text") },
+                                    "Date: ",
+                                    weather.applicable_date
+                                ),
+                                _react2.default.createElement(
+                                    "div",
+                                    { className: (0, _classnames2.default)("overflow-text") },
+                                    "Weather: ",
+                                    weather.weather_state_name
+                                ),
+                                _react2.default.createElement(
+                                    "div",
+                                    { className: (0, _classnames2.default)("overflow-text") },
+                                    "Low: ",
+                                    weather.min_temp.toFixed(2),
+                                    " C"
+                                ),
+                                _react2.default.createElement(
+                                    "div",
+                                    { className: (0, _classnames2.default)("overflow-text") },
+                                    "High: ",
+                                    weather.max_temp.toFixed(2),
+                                    " C"
                                 )
-                            );
-                        })
-                    )
-                )
-            );
-        }
-    }]);
-
-    return WeatherDisplay;
-}(_react.Component);
-
-;
+                            )
+                        )
+                    );
+                })
+            )
+        )
+    ) : null;
+};
 
 WeatherDisplay.props = {
     isLoading: _propTypes2.default.bool,
@@ -1074,20 +1040,36 @@ Object.defineProperty(exports, "__esModule", {
 
 var _reactRedux = __webpack_require__(/*! react-redux */ "./node_modules/react-redux/es/index.js");
 
+var _actions = __webpack_require__(/*! ../actions/actions */ "./app/actions/actions.js");
+
+var actions = _interopRequireWildcard(_actions);
+
 var _SavedResults = __webpack_require__(/*! ../components/SavedResults */ "./app/components/SavedResults.js");
 
 var _SavedResults2 = _interopRequireDefault(_SavedResults);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 var mapStateToProps = function mapStateToProps(state) {
     return {
-        isLoading: state.isLoading,
         lastFiveResults: state.lastFiveResults
     };
 };
 
-exports.default = (0, _reactRedux.connect)(mapStateToProps)(_SavedResults2.default);
+var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+    return {
+        setCurrentLocations: function setCurrentLocations(currentLocation) {
+            dispatch(actions.setCurrentLocations(currentLocation));
+        },
+        setCurrentResult: function setCurrentResult(result) {
+            dispatch(actions.setCurrentResult(result));
+        }
+    };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(_SavedResults2.default);
 
 /***/ }),
 
@@ -1188,7 +1170,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 var defaultState = {
     isLoading: false,
-    currentLocations: [],
+    currentLocations: null,
     currentResult: null,
     lastFiveResults: []
 };
@@ -4858,7 +4840,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, ".app-container {\n    padding: 2em;\n}\n\n.search-container {\n    display: flex;\n    flex-direction: row;\n    justify-content: space-around;\n    margin-bottom: 2em;\n}\n\n.locations-container {\n    padding: 2em;\n}\n\n.weather-container {\n    padding: 2em;\n}\n", ""]);
+exports.push([module.i, ".app-container {\n    padding: 2em;\n}\n\n.title {\n    margin-bottom: 1em;\n}\n\n.search-component {\n    text-align: center;\n    margin-bottom: 2em;\n}\n\n.search-bar {\n    margin-right: 1em;\n}\n\n.locations-container {\n    padding: 2em;\n}\n\n.location:hover {\n    background: #33b5e5;\n}\n\n.weather-display-container {\n    margin-bottom: 2em;\n}\n\n.weather-container {\n    padding: 2em;\n}\n\n.saved-results-container {\n    padding: 2em;\n    display: flex;\n    flex-direction: row;\n    justify-content: flex-start;\n    overflow-x: scroll;\n}\n\n.saved-result {\n    flex: 0 0 10em;\n    margin-right: 1em;\n}\n\n.overflow-text {\n    text-overflow: ellipsis;\n}\n\n.saved-result:hover {\n    background: #ffbb33;\n}\n", ""]);
 
 // exports
 
@@ -38928,6 +38910,222 @@ if (false) {} else {
   module.exports = __webpack_require__(/*! ./cjs/react-dom.development.js */ "./node_modules/react-dom/cjs/react-dom.development.js");
 }
 
+
+/***/ }),
+
+/***/ "./node_modules/react-geolocated/dist-modules/components/geolocated.js":
+/*!*****************************************************************************!*\
+  !*** ./node_modules/react-geolocated/dist-modules/components/geolocated.js ***!
+  \*****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.geoPropTypes = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function getDisplayName(WrappedComponent) {
+    return "Geolocated(" + (WrappedComponent.displayName || WrappedComponent.name || "Component") + ")";
+}
+
+var geolocated = function geolocated() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$positionOptions = _ref.positionOptions,
+        positionOptions = _ref$positionOptions === undefined ? {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: Infinity
+    } : _ref$positionOptions,
+        _ref$userDecisionTime = _ref.userDecisionTimeout,
+        userDecisionTimeout = _ref$userDecisionTime === undefined ? null : _ref$userDecisionTime,
+        _ref$suppressLocation = _ref.suppressLocationOnMount,
+        suppressLocationOnMount = _ref$suppressLocation === undefined ? false : _ref$suppressLocation,
+        _ref$watchPosition = _ref.watchPosition,
+        watchPosition = _ref$watchPosition === undefined ? false : _ref$watchPosition,
+        _ref$geolocationProvi = _ref.geolocationProvider,
+        geolocationProvider = _ref$geolocationProvi === undefined ? typeof navigator !== "undefined" && navigator.geolocation : _ref$geolocationProvi;
+
+    return function (WrappedComponent) {
+        var result = function (_Component) {
+            _inherits(Geolocated, _Component);
+
+            function Geolocated(props) {
+                _classCallCheck(this, Geolocated);
+
+                var _this = _possibleConstructorReturn(this, (Geolocated.__proto__ || Object.getPrototypeOf(Geolocated)).call(this, props));
+
+                _this.state = {
+                    coords: null,
+                    isGeolocationAvailable: Boolean(geolocationProvider),
+                    isGeolocationEnabled: true, // be optimistic
+                    positionError: null
+                };
+
+                _this.isCurrentlyMounted = false;
+
+                _this.onPositionError = _this.onPositionError.bind(_this);
+                _this.onPositionSuccess = _this.onPositionSuccess.bind(_this);
+                _this.cancelUserDecisionTimeout = _this.cancelUserDecisionTimeout.bind(_this);
+                _this.getLocation = _this.getLocation.bind(_this);
+                return _this;
+            }
+
+            _createClass(Geolocated, [{
+                key: "cancelUserDecisionTimeout",
+                value: function cancelUserDecisionTimeout() {
+                    if (this.userDecisionTimeoutId) {
+                        clearTimeout(this.userDecisionTimeoutId);
+                    }
+                }
+            }, {
+                key: "onPositionError",
+                value: function onPositionError(positionError) {
+                    this.cancelUserDecisionTimeout();
+                    if (this.isCurrentlyMounted) {
+                        this.setState({
+                            coords: null,
+                            isGeolocationAvailable: this.state.isGeolocationAvailable,
+                            isGeolocationEnabled: false,
+                            positionError: positionError
+                        });
+                    }
+                    if (this.props.onError) {
+                        this.props.onError(positionError);
+                    }
+                }
+            }, {
+                key: "onPositionSuccess",
+                value: function onPositionSuccess(position) {
+                    this.cancelUserDecisionTimeout();
+                    if (this.isCurrentlyMounted) {
+                        this.setState({
+                            coords: position.coords,
+                            isGeolocationAvailable: this.state.isGeolocationAvailable,
+                            isGeolocationEnabled: true,
+                            positionError: null
+                        });
+                    }
+                    if (this.props.onSuccess) {
+                        this.props.onSuccess(position);
+                    }
+                }
+            }, {
+                key: "getLocation",
+                value: function getLocation() {
+                    var _this2 = this;
+
+                    if (!geolocationProvider || !geolocationProvider.getCurrentPosition || !geolocationProvider.watchPosition) {
+                        throw new Error("The provided geolocation provider is invalid");
+                    }
+
+                    var funcPosition = (watchPosition ? geolocationProvider.watchPosition : geolocationProvider.getCurrentPosition).bind(geolocationProvider);
+
+                    if (userDecisionTimeout) {
+                        this.userDecisionTimeoutId = setTimeout(function () {
+                            _this2.onPositionError();
+                        }, userDecisionTimeout);
+                    }
+
+                    this.watchId = funcPosition(this.onPositionSuccess, this.onPositionError, positionOptions);
+                }
+            }, {
+                key: "componentDidMount",
+                value: function componentDidMount() {
+                    this.isCurrentlyMounted = true;
+                    if (!suppressLocationOnMount) {
+                        this.getLocation();
+                    }
+                }
+            }, {
+                key: "componentWillUnmount",
+                value: function componentWillUnmount() {
+                    this.isCurrentlyMounted = false;
+                    this.cancelUserDecisionTimeout();
+                    if (watchPosition) {
+                        geolocationProvider.clearWatch(this.watchId);
+                    }
+                }
+            }, {
+                key: "render",
+                value: function render() {
+                    return _react2.default.createElement(WrappedComponent, _extends({}, this.state, this.props));
+                }
+            }]);
+
+            return Geolocated;
+        }(_react.Component);
+        result.displayName = getDisplayName(WrappedComponent);
+        result.propTypes = {
+            onError: _propTypes2.default.func,
+            onSuccess: _propTypes2.default.func
+        };
+        return result;
+    };
+};
+
+exports.default = geolocated;
+var geoPropTypes = exports.geoPropTypes = {
+    coords: _propTypes2.default.shape({
+        latitude: _propTypes2.default.number,
+        longitude: _propTypes2.default.number,
+        altitude: _propTypes2.default.number,
+        accuracy: _propTypes2.default.number,
+        altitudeAccuracy: _propTypes2.default.number,
+        heading: _propTypes2.default.number,
+        speed: _propTypes2.default.number
+    }),
+    isGeolocationAvailable: _propTypes2.default.bool,
+    isGeolocationEnabled: _propTypes2.default.bool,
+    positionError: _propTypes2.default.shape({
+        code: _propTypes2.default.oneOf([1, 2, 3]),
+        message: _propTypes2.default.string
+    }),
+    watchPosition: _propTypes2.default.bool
+};
+
+/***/ }),
+
+/***/ "./node_modules/react-geolocated/dist-modules/index.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/react-geolocated/dist-modules/index.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _geolocated = __webpack_require__(/*! ./components/geolocated */ "./node_modules/react-geolocated/dist-modules/components/geolocated.js");
+
+var _geolocated2 = _interopRequireDefault(_geolocated);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = { geolocated: _geolocated2.default, geoPropTypes: _geolocated.geoPropTypes };
 
 /***/ }),
 

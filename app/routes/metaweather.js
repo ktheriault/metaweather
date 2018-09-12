@@ -1,5 +1,6 @@
 const superagent = require("superagent");
 const agent = superagent.agent();
+
 const baseURL = "https://www.metaweather.com/api";
 
 module.exports = function(router) {

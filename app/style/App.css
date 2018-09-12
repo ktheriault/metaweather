@@ -2,17 +2,52 @@
     padding: 2em;
 }
 
-.search-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+.title {
+    margin-bottom: 1em;
+}
+
+.search-component {
+    text-align: center;
     margin-bottom: 2em;
+}
+
+.search-bar {
+    margin-right: 1em;
 }
 
 .locations-container {
     padding: 2em;
 }
 
+.location:hover {
+    background: #33b5e5;
+}
+
+.weather-display-container {
+    margin-bottom: 2em;
+}
+
 .weather-container {
     padding: 2em;
+}
+
+.saved-results-container {
+    padding: 2em;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    overflow-x: scroll;
+}
+
+.saved-result {
+    flex: 0 0 10em;
+    margin-right: 1em;
+}
+
+.overflow-text {
+    text-overflow: ellipsis;
+}
+
+.saved-result:hover {
+    background: #ffbb33;
 }

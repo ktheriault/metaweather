@@ -30,7 +30,7 @@ class QuerySearch extends Component {
             <div>
                 <form className={classNames("form-inline")}>
                     <FormControl
-                        className={classNames("form-control")}
+                        className={classNames("form-control", "search-bar")}
                         value={this.state.query}
                         onChange={(event) => { this.setState({ query: event.target.value })}}
                         disabled={this.props.isLoading}

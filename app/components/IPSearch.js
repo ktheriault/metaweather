@@ -1,37 +1,34 @@
-import React, { Component } from "react";
+import React from "react";
 import PropTypes from "prop-types";
-import classNames from "classnames";
+import { geolocated } from "react-geolocated";
 import { Button } from "react-bootstrap";
 
-import { getLocationsByIP } from "../api/metaweather";
+import { getLocationsByCoordinates } from "../api/metaweather";
 
-class IPSearch extends Component {
+const IPSearch = (props) => {
 
-    constructor(props) {
-        super(props);
+    const onSearch = async () => {
+        const { coords } = props;
+        if (coords && coords.latitude && coords.longitude) {
+            props.setIsLoading(true);
+            const locations = await getLocationsByCoordinates(coords.latitude, coords.longitude);
+            props.setCurrentResult(null);
+            props.setCurrentLocations(locations);
+            props.setIsLoading(false);
+        }
     }
 
-    onSearch = async () => {
-        this.props.setIsLoading(true);
-        const locations = await getLocationsByIP();
-        this.props.setCurrentResult(null);
-        this.props.setCurrentLocations(locations);
-        this.props.setIsLoading(false);
-    }
-
-    render() {
-        return (
-            <div>
-                <Button
-                    bsStyle="primary"
-                    onClick={this.onSearch}
-                    disabled={this.props.isLoading}
-                >
-                    Search by IP
-                </Button>
-            </div>
-        );
-    }
+    return (
+        <div>
+            <Button
+                bsStyle="primary"
+                onClick={onSearch}
+                disabled={props.isLoading || !props.isGeolocationAvailable || !props.coords}
+            >
+                Search by IP
+            </Button>
+        </div>
+    );
 
 };
 
@@ -42,4 +39,9 @@ IPSearch.props = {
     setCurrentResult: PropTypes.func,
 }
 
-export default IPSearch;
+export default geolocated({
+    positionOptions: {
+        enableHighAccuracy: false,
+    },
+    userDecisionTimeout: 5000,
+})(IPSearch);

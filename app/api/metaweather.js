@@ -26,6 +26,8 @@ function getLocationsByCoordinates(latitude, longitude) {
         })
 }
 
+// Doesn't run on the live Heroku site because of "mixed content".
+// So I'm using the react-geolocated wrapper on the IPSearch component instead.
 function getLocationsByIP() {
     const url = "http://ip-api.com/json";
     return axios.get(url)
@@ -54,5 +56,5 @@ function getWeather(woeid) {
 }
 
 module.exports = {
-    getLocationsByQuery, getLocationsByIP, getWeather
+    getLocationsByQuery, getLocationsByCoordinates, getWeather
 }

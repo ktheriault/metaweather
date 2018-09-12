@@ -41,6 +41,7 @@ I am running through an Express server because the Metaweather API doesn't allow
 * Function handlers
 
     `app/components/LocationSelection.js`
+
     `app/components/SavedResults.js`
 
     Useful when displaying a list of buttons.
@@ -48,8 +49,11 @@ I am running through an Express server because the Metaweather API doesn't allow
 * Stateless components
 
     `app/components/IPSearch.js`
+
     `app/components/LocationSelection.js`
+
     `app/components/SavedResults.js`
+
     `app/components/WeatherDisplay.js`
 
     React can be used for clean, presentational components.
@@ -63,8 +67,11 @@ I am running through an Express server because the Metaweather API doesn't allow
 * Redux
 
     `app/store.js`
+
     `app/reducers/`
+
     `app/actions/`
+    
     `app/containers/`
     
     Redux is storage that can be used across the app. I'm using it to store data like `currentLocations` and `currentResult` so that the data can be loaded once and then shared between different components.

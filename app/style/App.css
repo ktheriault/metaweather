@@ -23,6 +23,11 @@
     background: #33b5e5;
 }
 
+.no-locations-text {
+    text-align: center;
+    margin-bottom: 2em;
+}
+
 .weather-display-container {
     margin-bottom: 2em;
 }

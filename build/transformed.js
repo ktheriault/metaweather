@@ -311,7 +311,7 @@ var App = function (_Component) {
                         )
                     )
                 ),
-                currentLocations && currentLocations.length > 0 ? _react2.default.createElement(_LocationSelection2.default, null) : null,
+                _react2.default.createElement(_LocationSelection2.default, null),
                 currentResult ? _react2.default.createElement(_WeatherDisplay2.default, null) : null,
                 _react2.default.createElement(_SavedResults2.default, null)
             );
@@ -454,10 +454,14 @@ var LocationSelection = function LocationSelection(props) {
     var isLoading = props.isLoading,
         currentLocations = props.currentLocations;
 
-    return isLoading ? _react2.default.createElement(
+    return !currentLocations ? null : isLoading ? _react2.default.createElement(
         "div",
         null,
         "Loading..."
+    ) : currentLocations.length === 0 ? _react2.default.createElement(
+        "h4",
+        { className: (0, _classnames2.default)("no-locations-text") },
+        "No results found."
     ) : _react2.default.createElement(
         _reactBootstrap.Well,
         { className: (0, _classnames2.default)("locations-container") },
@@ -4840,7 +4844,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, ".app-container {\n    padding: 2em;\n}\n\n.title {\n    margin-bottom: 1em;\n}\n\n.search-component {\n    text-align: center;\n    margin-bottom: 2em;\n}\n\n.search-bar {\n    margin-right: 1em;\n}\n\n.locations-container {\n    padding: 2em;\n}\n\n.location:hover {\n    background: #33b5e5;\n}\n\n.weather-display-container {\n    margin-bottom: 2em;\n}\n\n.weather-container {\n    padding: 2em;\n}\n\n.saved-results-container {\n    padding: 2em;\n    display: flex;\n    flex-direction: row;\n    justify-content: flex-start;\n    overflow-x: scroll;\n}\n\n.saved-result {\n    flex: 0 0 10em;\n    margin-right: 1em;\n}\n\n.overflow-text {\n    text-overflow: ellipsis;\n}\n\n.saved-result:hover {\n    background: #ffbb33;\n}\n", ""]);
+exports.push([module.i, ".app-container {\n    padding: 2em;\n}\n\n.title {\n    margin-bottom: 1em;\n}\n\n.search-component {\n    text-align: center;\n    margin-bottom: 2em;\n}\n\n.search-bar {\n    margin-right: 1em;\n}\n\n.locations-container {\n    padding: 2em;\n}\n\n.location:hover {\n    background: #33b5e5;\n}\n\n.no-locations-text {\n    text-align: center;\n    margin-bottom: 2em;\n}\n\n.weather-display-container {\n    margin-bottom: 2em;\n}\n\n.weather-container {\n    padding: 2em;\n}\n\n.saved-results-container {\n    padding: 2em;\n    display: flex;\n    flex-direction: row;\n    justify-content: flex-start;\n    overflow-x: scroll;\n}\n\n.saved-result {\n    flex: 0 0 10em;\n    margin-right: 1em;\n}\n\n.overflow-text {\n    text-overflow: ellipsis;\n}\n\n.saved-result:hover {\n    background: #ffbb33;\n}\n", ""]);
 
 // exports
 

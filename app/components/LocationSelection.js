@@ -18,8 +18,14 @@ const LocationSelection = (props) => {
     }
 
     const { isLoading, currentLocations } = props;
-    return isLoading ? (
+    return !currentLocations ? 
+        null
+    : isLoading ? (
         <div>Loading...</div>
+    ) : currentLocations.length === 0 ? (
+        <h4 className={classNames("no-locations-text")}>
+            No results found.
+        </h4>
     ) : (
         <Well className={classNames("locations-container")}>
             {currentLocations && currentLocations.length === 0 ? (

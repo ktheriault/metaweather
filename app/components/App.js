@@ -37,7 +37,7 @@ class App extends Component {
                         </Col>
                     </Row>
                 </Grid>
-                {currentLocations && currentLocations.length > 0 ? <LocationSelection/> : null}
+                <LocationSelection/>
                 {currentResult ? <WeatherDisplay/> : null}
                 <SavedResults/>
             </div>

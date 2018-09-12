@@ -16,6 +16,9 @@ const mapDispatchToProps = (dispatch) => {
         setCurrentLocations: (results) => {
             dispatch(actions.setCurrentLocations(results));
         },
+        setCurrentResult: (result) => {
+            dispatch(actions.setCurrentResult(result));
+        },
     };
 };
 

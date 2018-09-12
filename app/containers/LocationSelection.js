@@ -14,6 +14,9 @@ const mapDispatchToProps = (dispatch) => {
         setIsLoading: (isLoading) => {
             dispatch(actions.setIsLoading(isLoading));
         },
+        setCurrentLocations: (currentLocation) => {
+            dispatch(actions.setCurrentLocations(currentLocation));
+        },
         saveResult: (result) => {
             dispatch(actions.saveResult(result));
         },

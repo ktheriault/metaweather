@@ -23,6 +23,13 @@ const reducer = (state = defaultState, action) => {
                 currentLocations,
             }
         }
+        case actions.SET_CURRENT_RESULT: {
+            const { currentResult } = action;
+            return {
+                ...state,
+                currentResult,
+            }
+        }
         case actions.SAVE_RESULT: {
             const { result } = action;
             if (state.lastFiveResults.length < 5) {

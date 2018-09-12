@@ -2,13 +2,15 @@ import { connect } from "react-redux";
 import * as actions from "../actions/actions";
 import App from "../components/App";
 
-const mapStateToProps = () => {
-  return {}
+const mapStateToProps = (state) => {
+    return {
+        currentLocations: state.currentLocations,
+        currentResult: state.currentResult,
+    }
 };
 
 const mapDispatchToProps = (dispatch, props) => {
   return {};
 };
 
-const App = connect(mapStateToProps, mapDispatchToProps)(Link);
-export default App;
+export default connect(mapStateToProps, mapDispatchToProps)(App);

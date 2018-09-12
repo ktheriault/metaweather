@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
+import { Well, Panel } from "react-bootstrap";
 
 import { getWeather } from "../api/metaweather";
 
@@ -13,6 +15,7 @@ class LocationSelection extends Component {
         return async () => {
             this.props.setIsLoading(true);
             const res = await getWeather(this.props.currentLocations[i].woeid)
+            this.props.setCurrentLocations(null)
             this.props.saveResult(res);
             this.props.setIsLoading(false);    
         }
@@ -22,21 +25,32 @@ class LocationSelection extends Component {
         const { isLoading, currentLocations } = this.props;
         return isLoading ? (
             <div>Loading...</div>
-        ) : currentLocations.length === 0 ? (
-            <div>Enter a query to get started</div>
         ) : (
-            <div>
-                {currentLocations.map((location, i) => {
-                    return (
-                        <div
-                            key={location.woeid}
-                            onClick={this.getOnLocationSelectedHandler(i)}
-                        >
-                            {location.title}
+            <Well className={classNames("locations-container")}>
+                {currentLocations && currentLocations.length === 0 ? (
+                    <div>Enter a query to get started</div>
+                ) : (
+                    <div>
+                        <div>
+                            Select your location:
                         </div>
-                    )
-                })}
-            </div>
+                        {currentLocations.map((location, i) => {
+                            return (
+                                <div
+                                    key={location.woeid}
+                                    onClick={this.getOnLocationSelectedHandler(i)}
+                                >
+                                    <Panel>
+                                        <Panel.Body>
+                                            {location.title}
+                                        </Panel.Body>
+                                    </Panel>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
+            </Well>
         );
     }
 
@@ -45,6 +59,7 @@ class LocationSelection extends Component {
 LocationSelection.props = {
     isLoading: PropTypes.bool,
     currentLocations: PropTypes.array,
+    setCurrentLocations: PropTypes.func,
     setIsLoading: PropTypes.func,
 }
 

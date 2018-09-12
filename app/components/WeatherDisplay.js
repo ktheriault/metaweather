@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
+import { Well, Panel } from "react-bootstrap";
 
 class WeatherDisplay extends Component {
 
@@ -15,18 +17,29 @@ class WeatherDisplay extends Component {
             <div>No result</div>
         ) : (
             <div>
-                {currentResult.consolidated_weather.map((weather) => {
-                    return (
-                        <div
-                            key={weather.applicable_date}
-                        >
-                            <div>Date: {weather.applicable_date}</div>
-                            <div>Weather: {weather.weather_state_name}</div>
-                            <div>Low: {weather.min_temp}</div>
-                            <div>High: {weather.max_temp}</div>
-                        </div>
-                    )
-                })}
+                <h3>
+                    Showing weather for {currentResult.title}
+                </h3>
+                <div>
+                    <Well className={classNames("weather-container")}>
+                        {currentResult.consolidated_weather.map((weather) => {
+                            return (
+                                <div
+                                    key={weather.applicable_date}
+                                >
+                                    <Panel>
+                                        <Panel.Body>
+                                            <div>Date: {weather.applicable_date}</div>
+                                            <div>Weather: {weather.weather_state_name}</div>
+                                            <div>Low: {weather.min_temp.toFixed(2)} C</div>
+                                            <div>High: {weather.max_temp.toFixed(2)} C</div>
+                                        </Panel.Body>
+                                    </Panel>
+                                </div>
+                            )
+                        })}
+                    </Well>
+                </div>
             </div>
         );
     }
@@ -35,7 +48,7 @@ class WeatherDisplay extends Component {
 
 WeatherDisplay.props = {
     isLoading: PropTypes.bool,
-    currentResult: PropTypes.array,
+    currentResult: PropTypes.object,
 }
 
 export default WeatherDisplay;

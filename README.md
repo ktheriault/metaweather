@@ -30,6 +30,8 @@
 
 I am running through an Express server because the Metaweather API doesn't allow CORS.
 
+I'm using the "react-geolocated" library instead of an API call to "http://ip-api.com/json" because the Heroku site is HTTPS and can't mix HTTP with HTTPS.
+
 ### Nifty React features
 
 * Responsive columns

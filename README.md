@@ -33,17 +33,20 @@ I am running through an Express server because the Metaweather API doesn't allow
 ### Nifty React features
 
 * Responsive columns
+
     `app/components/App.js`
 
     The search bar will change based on the browser size.
 
 * Function handlers
+
     `app/components/LocationSelection.js`
     `app/components/SavedResults.js`
 
     Useful when displaying a list of buttons.
 
 * Stateless components
+
     `app/components/IPSearch.js`
     `app/components/LocationSelection.js`
     `app/components/SavedResults.js`
@@ -52,11 +55,13 @@ I am running through an Express server because the Metaweather API doesn't allow
     React can be used for clean, presentational components.
 
 * Wrapped components
+
     `app/components/IPSearch.js`
 
     Some libraries provide component wrappers so that your component has access to certain props.
 
 * Redux
+
     `app/store.js`
     `app/reducers/`
     `app/actions/`
@@ -67,6 +72,7 @@ I am running through an Express server because the Metaweather API doesn't allow
     You can see the state changing in a tab in Chrome Developer Tools with Redux DevTools: https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en.
 
 * Loading screens
+
     `app/components`
 
     Buttons are locked down while the site is loading so that the user can't make an API call while another one is happening. Since this app only uses one API, all of the components share an `isLoading` bool in Redux.
